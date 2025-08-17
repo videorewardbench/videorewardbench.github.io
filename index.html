@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Textual Temporal Reasoning Transfer">
+  <meta name="keywords" content="multimodal chatbot">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VL-RewardBench</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="images/t3/logo-t3.png">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/js/all.min.js"></script>
+  <script type="module" src="https://gradio.s3-us-west-2.amazonaws.com/4.16.0/gradio.js"></script>
+</head>
+
+<style>
+  .expandable-card .card-text-container {
+    max-height: 200px;
+    overflow-y: hidden;
+    position: relative;
+  }
+
+  .expandable-card.expanded .card-text-container {
+    max-height: none;
+  }
+
+  .expand-btn {
+    position: relative;
+    display: none;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* margin-top: -20px; */
+    /* justify-content: center; */
+    color: #510c75;
+    border-color: transparent;
+  }
+
+  .expand-btn:hover {
+    background-color: rgba(200, 200, 200, 0.8);
+    text-decoration: none;
+    border-color: transparent;
+    color: #510c75;
+  }
+
+  .expand-btn:focus {
+    outline: none;
+    text-decoration: none;
+  }
+
+  .expandable-card:not(.expanded) .card-text-container:after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 90px;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 1));
+  }
+
+  .expandable-card:not(.expanded) .expand-btn {
+    margin-top: -40px;
+  }
+
+  .card-body {
+    padding-bottom: 5px;
+  }
+
+  .vertical-flex-layout {
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .figure-img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .adjustable-font-size {
+    font-size: calc(0.5rem + 2vw);
+  }
+
+  .chat-history {
+    flex-grow: 1;
+    overflow-y: auto;
+    /* overflow-x: hidden; */
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+
+  #gradio pre {
+    background-color: transparent;
+  }
+</style>
+
+<body>
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <!-- <h1 class="title is-1 publication-title">LLaVA: <span class="is-size-2"><span class="is-size-1">L</span>arge <span class="is-size-1">L</span>anguage <span class="is-size-1">a</span>nd <span class="is-size-1">V</span>ision <span class="is-size-1">A</span>ssistant</span></h1> -->
+            <h1 class="title is-1 publication-title">VideoRewardBench</h1>
+            <h2 class="subtitle is-3 publication-subtitle">Comprehensive Evaluation of Multimodal Reward Models for Video Understanding</h2>
+            <!-- <h5 class="subtitle is-5 publication-awards"> CVPR 2025 Highlight</h5> -->
+            <!-- <h5 class="subtitle is-5 publication-awards">NeurIPS 2023 (Oral)</h5> -->
+            <div class="is-size-5">
+              <!-- Lei Li♡∗, Yuancheng Wei♢∗, Zhihui Xie♡∗, Xuqing Yang♣∗ -->
+<!-- , Yifan Song‡, Peiyi Wang‡, -->
+<!-- Chenxin An♡, Tianyu Liu‡, Sujian Li‡, Bill Yuchen Lin♠, Lingpeng Kong♡, Qi Liu♡ -->
+              <span class="author-block">
+              <a href="https://github.com/zhang123434" >Zhihong Zhang</a>,
+              </span>
+              <span class="author-block">
+                <a href="https://github.com/hxiaoj" >Xiaojian Huang</a>,
+              </span>
+              <span class="author-block">
+                <a href="https://orcid.org/0000-0002-1104-5875" >Jin Xu</a>,
+              </span>
+              <span class="author-block">
+                <a href="https://github.com/coollzd" >Luo Zhuodong</a>,
+              </span>
+              <span class="author-block">
+                <a href="https://faculty.ustc.edu.cn/ChenXuejin/en/index.htm" >Xuejin Chen</a>
+              </span>
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              <span class="author-block">University of Science and Technology of China</span>
+            </div>
+
+            <div class="column has-text-centered">
+              <div class="publication-links">
+                <span class="link-block">
+                  <a href="#" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                </span>
+
+                <span class="link-block">
+                  <a href="#" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+
+                <span class="link-block">
+                  <a href="#" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-database"></i>
+                    </span>
+                    <span>HF Dataset</span>
+                  </a>
+                </span>
+
+                <!-- <span class="link-block">
+                  <a href="https://huggingface.co/spaces/MMInstruction/VL-RewardBench" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-database"></i>
+                    </span>
+                    <span>Dataset Visualizer</span>
+                  </a>
+                </span>
+                <span class="link-block">
+                  <a href="https://huggingface.co/spaces/MMInstruction/VL-RewardBench" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-share-square"></i>
+                    </span>
+                    <span>Leaderboard</span>
+                  </a>
+                </span> -->
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section"  style="background-color:#efeff081">
+    <div class="container is-max-desktop">
+      <!-- Abstract. -->
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-six-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Multimodal reward models (MRMs) play a crucial role in the training, inference, and evaluation of Large Vision Language Models (LVLMs) by assessing response quality. However, existing benchmarks for evaluating MRMs in the video domain suffer from a limited number and diversity of questions, a lack of comprehensive evaluation dimensions, and inadequate evaluation of diverse types of MRMs. To address these gaps, we introduce <b>VideoRewardBench</b>, the first comprehensive benchmark covering four core aspects of video understanding: perception, knowledge, reasoning, and safety. Through our AI-assisted data pipeline, we curate a high-quality preference dataset of 1,563 annotated samples, including 1,482 unique videos and 1,559 distinct questions—15 times the number found in the most question-rich prior benchmark. Each sample is a triplet consisting of a video-text prompt, a chosen response, and a rejected response. We also conduct a comprehensive evaluation across 28 multimodal reward models spanning three categories: generative, discriminative, and semi-scalar. Results show that even the top-performing model GPT-4o achieves only 57.0% overall accuracy, and the state-of-the-art open-source model Qwen2.5-VL-72B reaches merely 53.3%. Furthermore, existing MRMs that have undergone specialized reward modeling training still lag behind the best proprietary model. Our analysis further reveals three key insights: (i) MRMs trained with reinforcement learning (RL) do not necessarily exhibit stronger cross-modal generalization than those trained without RL; (ii) except for discriminative MRMs, other types of MRMs across varying model capacities can benefit from inference-time scaling; and (iii) variations in input video frame count have different effects on different types of MRMs. We believe VideoRewardBench offers a challenging and valuable benchmark for advancing the evaluation and development of MRMs in the video domain.
+           </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">Summary of VideoRewardBench</h2>
+      </div>
+    </div>
+  
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column">
+          <div class="content">
+            <!-- <div class="requirements-box mb-4">
+              <p class="mb-3">
+                Ideally, an effective benchmark for VL-GenRMs should satisfy three key requirements:
+              </p>
+              <div class="requirements-list">
+                <span class="requirement">a) diverse coverage of real-world applications;</span>
+                <span class="requirement">b) sufficient difficulty to expose current models' limitations;</span>
+                <span class="requirement">c) objective ground truth labels.</span>
+              </div>
+            </div> -->
+  
+            <div class="text-center mt-5">
+              <img id="summary" width="75%" src="./images/summary.png" alt="VL-RewardBench Pipeline">
+            </div>
+            <br>
+            <br>
+
+
+            <div class="columns is-centered has-text-centered">
+              <h4 class="title is-4">VideoRewardBench Statistics</h4>
+            </div>
+            <div class="text-center mt-5">
+              <img id="leaderboard" width="90%" src="./images/statistic.png" alt="VL-RewardBench Statistics">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+    <br>
+
+    <style>
+      .requirements-box {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+      }
+  
+      .requirements-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+  
+      .requirement {
+        color: #2c3e50;
+        font-weight: 600;
+      }
+  
+      .domains-list {
+        padding-left: 1rem;
+      }
+  
+      .domain-item {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+  
+      .domain-number {
+        color: #2980b9;
+        font-weight: 600;
+      }
+  
+      .strategy-list {
+        padding-left: 1.5rem;
+      }
+  
+      .strategy-list li {
+        margin-bottom: 0.5rem;
+      }
+  
+      .verification-note {
+        background-color: #edf2f7;
+        padding: 1rem;
+        border-radius: 6px;
+        border-left: 4px solid #2980b9;
+      }
+  
+      .text-center {
+        text-align: center;
+      }
+  
+      .mb-3 {
+        margin-bottom: 1rem;
+      }
+  
+      .mb-4 {
+        margin-bottom: 1.5rem;
+      }
+  
+      .mt-5 {
+        margin-top: 2rem;
+      }
+    </style>
+  </section>
+   
+
+  
+  <section class="section">
+    <!-- Results. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-six-fifths">
+        <h2 class="title is-3">Experiments</h2>
+      </div>
+    </div>
+    <!-- </div> -->
+    <!--/ Results. -->    
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <div class="content has-text-justified">
+          <!-- <p>
+            We present a comprehensive evaluation of 16 state-of-the-art vision-language reward models (VL-GenRMs) on VL-RewardBench, encompassing both open-source models (ranging from 7B to 90B parameters) and leading commercial systems including Gemini-1.5-Pro, Claude-3.5-Sonnet, and GPT-4. 
+
+            Our benchmark uncovers significant limitations in current VL-GenRMs: even top commercial models achieve only moderate performance (GPT-4: 62.4%, Gemini-1.5-Pro: 62.5%). Meanwhile, state-of-the-art open-source models like Qwen2-VL-72B and LLaMA-3.2-90B perform near chance level (43.0% and 53.9%, respectively). 
+          </p> -->
+  
+        <div style="text-align: center;">
+          <img id="pipeline_framework" width="80%" src="./images/result.png">     
+        </div>
+        <!-- <br> 
+        <p>
+          Remarkably, performance on VL-RewardBench shows strong correlation (Pearson's r > 0.9) with downstream MMMU-Pro results when using these models for Best-of-N sampling guidance.
+        </p>
+        <div style="text-align: center;">
+          <img id="pipeline_framework" width="90%" src="./images/BoN-correlation.png">     
+        </div> -->
+      </div>
+  </section>
+  
+  <section class="section">
+    <div class="columns is-centered has-text-centered">
+      <div class="column">
+        <h2 class="title is-3">Further Analysis</h2>
+      </div>
+    </div>
+  
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column">
+          <div class="content has-text-justified">
+            <p class="mb-5">
+              Given the poor accuracy of VL-GenRMs on our benchmark, our analysis uncovers three critical insights for advancing VL-GenRMs:
+            </p>
+  
+            <div class="finding-box mb-4">
+              <p class="finding-content">
+                1. The primary performance bottleneck lies in visual perception rather than reasoning - models show significantly higher error rates on existence/recognition tasks (> 67%) compared to reasoning tasks (41.8%).
+                <span class="arrow">→</span>
+                <span class="conclusion">Improving Visual Perception Capability of VL-GenRMs first!</span>
+              </p>
+            </div>
+            <div class="text-center mb-4">
+              <img id="analysis_img" width="90%" src="./images/inference_time_scaling.png" alt="Analysis Results">
+            </div>
+  
+            <div class="finding-box mb-4">
+              <p class="finding-content">
+              2. The effectiveness of test-time scaling varies with model capacity, providing benefits to larger models while potentially degrading smaller models' performance.
+                <span class="arrow">→</span>
+                <span class="conclusion">Advancing Test-time Scaling Strategies for VL-GenRMs.</span>
+              </p>
+            </div>
+  
+            <div class="text-center mb-4">
+              <img id="analysis_img" width="50%" src="./images/frames_num2.png" alt="Analysis Results">
+            </div>
+  
+            <!-- <div class="finding-box mb-4">
+              <p class="finding-content">
+               3.  LLaVA-Critic substantially improves judgment capabilities, demonstrated by a 14.7% accuracy gain for LLaVA-OneVision-7B-ov, with pointwise evaluation slightly outperforming pairwise scoring on average.
+                <span class="arrow">→</span>
+                <span class="conclusion">Developing a co-evolution framework for LVLMs and VL-GenRMs to improve in a self-play way.</span>
+              </p>
+            </div>
+  
+            <div class="text-center">
+              <img id="critic_img" width="60%" src="./images/critic.png" alt="Critic Results">
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <style>
+      .finding-box {
+        background-color: #f8f9fa;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      }
+  
+      .finding-content {
+        margin: 0;
+        /* line-height: 1.0; */
+      }
+  
+      .number {
+        font-weight: bold;
+        color: #2c3e50;
+      }
+  
+      .arrow {
+        color: #7f8c8d;
+        margin: 0 0.5rem;
+        font-weight: bold;
+      }
+  
+      .conclusion {
+        color: #2980b9;
+        font-weight: bold;
+      }
+  
+      .text-center {
+        text-align: center;
+      }
+  
+    </style>
+  </section>
+
+  <!-- <section class="section" id="BibTeX">
+    <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>
+     @inproceedings{li2025vlrewardbench,
+  title={VL-RewardBench: A Challenging Benchmark for Vision-Language Generative Reward Models},
+  author={Li, Lei and Wei, Yuancheng and Xie, Zhihui and Yang, Xuqing and Song, Yifan and Wang, Peiyi and An, Chenxin and Liu, Tianyu and Li, Sujian and Lin, Bill Yuchen and Kong, Lingpeng and Liu, Qi},
+  booktitle={{CVPR}},
+  year={2025}
+}
+  </code></pre>
+    </div>
+  </section> -->
+  
+  <section class="section" id="Acknowledgement">
+    <div class="container is-max-desktop content">
+      <h2 class="title">Acknowledgement</h2>
+      <p>
+        This website is adapted from <a href="https://github.com/llava-vl/llava-vl.github.io">LLaVA-VL</a> and <a
+        href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>, licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+        Commons Attribution-ShareAlike 4.0 International License</a>. 
+
+      <p>
+<b>Usage and License Notices</b>: The data and code is intended and licensed for research use only. They are also restricted to uses that follow the license agreement of GPT-4o and Claude. 
+</p>
+
+      <!-- <p>
+      Related Links: 
+      <a href='https://vlf-silkie.github.io/'>VLFeedback</a>, 
+      <a href='https://huggingface.co/WildVision'>WildVision</a>,
+      <a href='https://github.com/RLHF-V/RLHF-V'>RLHF-V</a>,
+      <a href='https://github.com/RLHF-V/RLAIF-V'>RLAIF-V</a>,
+      <a href='https://github.com/YiyangZhou/POVID'>POVID</a>,
+      <a href='https://mmmu-benchmark.github.io/'>MMMU-Pro</a>,
+      <a href='https://mathverse-cuhk.github.io/'>MathVerse</a>,
+      <a href='https://github.com/allenai/reward-bench'>RewardBench</a>
+
+
+      </p>     -->
+    </div>
+  </section>
+
+  <script>
+    // Handle message showing
+    function createChatRow(sender, text, imageSrc) {
+      var article = document.createElement("article");
+      article.className = "media"
+
+      var figure = document.createElement("figure");
+      figure.className = "media-left";
+
+      var span = document.createElement("span");
+      span.className = "icon is-large";
+
+      var icon = document.createElement("i");
+      icon.className = "fas fas fa-2x" + (sender === "User" ? " fa-user " : sender === "LLaVA" ? " fa-robot" : "");
+
+      var media = document.createElement("div");
+      media.className = "media-content";
+
+      var content = document.createElement("div");
+      content.className = "content";
+
+      var para = document.createElement("p");
+
+      // wrap text in pre tag to preserve whitespace and line breaks
+      var pre_text = document.createElement("pre");
+      pre_text.style = "background-color: white; font-size: 18px; font-family: Arial; padding: 0; margin: 0; white-space: pre-wrap; word-wrap: break-word;";
+      var paraText = document.createTextNode(text);
+      pre_text.appendChild(paraText);
+
+      var strong = document.createElement("strong");
+      strong.innerHTML = sender;
+      var br = document.createElement("br");
+
+      para.appendChild(strong);
+      para.appendChild(br);
+      para.appendChild(pre_text);
+
+      // Add image if imageSrc is provided
+      if (imageSrc) {
+        var img = document.createElement("img");
+        img.src = imageSrc;
+        img.style = "max-width: 100%; max-height: 300px;"; // Adjust the style as needed
+        para.appendChild(img);
+      }
+
+      content.appendChild(para);
+      media.appendChild(content);
+      span.appendChild(icon);
+      figure.appendChild(span);
+      if (sender !== "Description") {
+        article.appendChild(figure);
+      };
+      article.appendChild(media);
+      return article;
+    }
+
+    function addMessageToChatHistory(sender, message, imageSrc) {
+      const chatHistory = document.querySelector('.chat-history');
+      const chatRow = createChatRow(sender, message, imageSrc);
+      chatHistory.appendChild(chatRow);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function clearChatHistory() {
+      const chatHistory = document.querySelector('.chat-history');
+      chatHistory.innerHTML = "";
+    }
+
+    // 
+    const conversations = [
+      {
+        "description": "monalisa",
+        "turns": [
+          // ["Description", "Please read the description and answer the question."],
+          ["User", "", "/static/images/monalisa.jpg"],
+          ["User", "Do you know who drew this painting?​"],
+          ["LLaVA",
+            "The painting depicts a woman, commonly believed to be Mona Lisa, the famous artwork by Leonardo da Vinci. " +
+            "It is a portrait painting that showcases the woman's enigmatic smile and has become one of the most famous and iconic art pieces in the world. " +
+            "The original work is displayed in the Louvre Museum in Paris, and it is known for its intricate details, use of oil paint, and the artist's innovative techniques that contributed to its enduring appeal and mystery.​​"
+          ]
+        ]
+      },
+      {
+        "description": "monalisa with dog head",
+        "turns": [
+          ["User", "", "/static/images/monalisa-fun.jpg"],
+          ["User", "Do you know who drew this painting?​"],
+          ["LLaVA", "The painting depicts a dog in a humorous situation, where it appears to be wearing a woman's dress and standing in front of a landscape. Although the artist of the painting is not explicitly identified, it could be a reference to the famous artist Da Vinci, known for his artistic works, including the Mona Lisa. The painting is likely a creative and comical take on the traditional portrait style, replacing a human figure with a dog dressed in a woman's clothing, making it an interesting and amusing visual piece.​"]
+        ]
+      },
+      {
+        "description": "Titanic Rose and Jack",
+        "turns": [
+          ["User", "", "/static/images/titanic.jpg"],
+          ["User", "What's the ending of this movie?​​"],
+          ["LLaVA", "​In the image, a young woman is leaning on a man in front of a beautiful sunset, with both of them standing on a boat. They appear to be enjoying a romantic moment together. The scene suggests that they could be depicted as the characters Jack and Rose from the popular movie Titanic. In the movie, their romance blossoms aboard the fictional ocean liner Titanic, with the pair ultimately sharing a passionate kiss as the ship sinks into the ocean. The ending of the movie is known for its emotional and heartfelt scenes, where the characters are forced to say goodbye to each other as they are separated by the sinking ship. The image evokes a sense of romance and nostalgia, paying tribute to the iconic love story portrayed in the movie Titanic.​"]
+        ]
+      },
+      {
+        "description": "Fridge",
+        "turns": [
+          ["User", "", "/static/images/fridge.jpg"],
+          ["User", "What are the meals that I can cook with these?​​"],
+          ["LLaVA", "With the variety of food items stored in the refrigerator, you can prepare several meals. For example, you can create a fruit salad using the strawberries, blueberries, and carrots. Additionally, you can make a delicious smoothie using the fruits and vegetables, which would be a healthy and nutritious snack or breakfast option. The milk and eggs can be used to create various dishes, such as a milk-based smoothie, a baked casserole, or scrambled eggs. The juice can also be used to make a fresh fruit and juice mix or as a refreshing homemade popsicle. The possibilities are vast, and the meals you can create will depend on your preferences and dietary needs.​​"],
+          ["User", "I would like to do the fruit salad.  Show me the recipe.​"],
+          ["LLaVA",
+            `Certainly! Here's a simple fruit salad recipe using the items in your refrigerator:​
+
+Ingredients:​
+- 2 cups fresh strawberries, sliced​
+- 1 cup fresh blueberries​
+- 1 large carrot, grated​
+- Juice of half a lemon​
+- A handful of chopped fresh parsley or mint​
+- A few ice cubes​
+- Optional: honey or maple syrup (adjust to taste)​
+
+Instructions:​
+1. In a large bowl, combine the sliced strawberries, blueberries, and carrot. Gently toss them together to mix.​
+2. Drizzle the juice of half a lemon over the fruit and vegetables to prevent them from oxidizing and add a refreshing citrus flavor.​
+3. Sprinkle the chopped fresh parsley or mint over the fruit and gently toss once more.​
+4. If desired, add a drizzle of honey or maple syrup for a touch of sweetness. Adjust the amount according to your taste preferences.​
+5. Cover the bowl and refrigerate the fruit salad for at least 30 minutes or up to a few hours. This allows the flavors to meld and creates a more refreshing salad.​
+6. Serve the fruit salad in cups or bowls, garnished with a sprinkle of fresh parsley or mint, if desired.​
+
+This fruit salad recipe is perfect for a healthy snack or side dish, and with the variety of ingredients available in your refrigerator, it should be easy to put together quickly.`]]
+      },
+      {
+        "description": "Beautiful View",
+        "turns": [
+          ["User", "", "/static/images/view.jpg"],
+          ["User", "What are the things I should be cautious about when I visit here?​​"],
+          ["LLaVA", "When visiting this peaceful location with a pier extending over a serene lake, surrounded by mountains, there are several things to be cautious about. First, pay attention to the weather conditions, as sudden changes in weather, especially strong winds or storms, can cause the water to become rough and pose risks to the stability of the pier. Second, be mindful of the structural integrity of the pier; avoid overloading it with too many people or excessive weight, as this could potentially damage the pier or cause it to collapse. Additionally, be aware of the surrounding wildlife and respect their space; do not harm or disturb them in any way. Finally, if you decide to go fishing, ensure that you adhere to any local fishing regulations and use appropriate fishing techniques to keep the lake ecosystem healthy and maintain the balance of the food chain.​​"],
+          ["User", "Compose an engaging travel blog post about my trip to this place, highlighting the beautiful sceneries, joyful experiences, and include possible anecdotes.​​"],
+          ["LLaVA",
+            `Traveling to this picturesque location with a serene lake and mountains in the background was a refreshing and rejuvenating experience. The pier extending over the calm water provided an excellent vantage point from which to appreciate the breathtaking scenery. As I stood on the pier, I couldn't help but feel a deep connection with nature, taking a moment to soak in the peaceful atmosphere.​
+
+One of the highlights of my trip was undoubtedly the fishing experience. The area is teeming with life, and I was thrilled to land a sizeable catch, despite the modest size of the lake. The joy of fishing in such a beautiful setting was truly rewarding, and it allowed me to take a break from my busy life and truly immerse myself in the tranquility of nature.​
+
+While exploring the surrounding area, I came across a family of birds that had built a nest close to the pier, adding to the charm of the location. Interacting with the wildlife and observing their behavior was an enriching experience that I'll cherish for years to come.​
+
+In conclusion, this idyllic destination provided me with an opportunity to unwind and recharge, surrounded by mesmerizing natural beauty and the gentle sounds of water and wildlife. If you're looking for a serene escape from the hustle and bustle of everyday life, this pier overlooking the lake is the perfect place to find solace and reconnect with nature.`
+          ]
+        ]
+      },
+    ];
+
+    // The current image index
+    let currentIndex = 0;
+
+    // The function to update the displayed chat history
+    function update_dialog_demo() {
+      // Clear the chat history
+      clearChatHistory();
+
+      for (let i = 0; i < conversations[currentIndex].turns.length; i++) {
+        if (conversations[currentIndex].turns[i].length == 2) {
+          addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1]);
+        }
+        else {
+          addMessageToChatHistory(conversations[currentIndex].turns[i][0], conversations[currentIndex].turns[i][1], conversations[currentIndex].turns[i][2]);
+        }
+      }
+
+      // scroll to the top of the chat history
+      document.querySelector('.chat-history').scrollTop = 0;
+    }
+
+    // Initialize the displayed image
+    update_dialog_demo();
+
+    // Event listeners for the buttons
+    document.getElementById('prev-question').addEventListener('click', () => {
+      currentIndex = (currentIndex - 1 + conversations.length) % conversations.length;
+      update_dialog_demo();
+    });
+
+    document.getElementById('next-question').addEventListener('click', () => {
+      currentIndex = (currentIndex + 1) % conversations.length;
+      update_dialog_demo();
+    });
+
+
+  </script>
+
+</body>
+
+</html>
