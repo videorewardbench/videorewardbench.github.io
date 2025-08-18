@@ -342,11 +342,11 @@
     <div class="columns is-centered">
       <div class="column is-full-width">
         <div class="content has-text-justified">
-          <!-- <p>
-            We present a comprehensive evaluation of 16 state-of-the-art vision-language reward models (VL-GenRMs) on VL-RewardBench, encompassing both open-source models (ranging from 7B to 90B parameters) and leading commercial systems including Gemini-1.5-Pro, Claude-3.5-Sonnet, and GPT-4. 
-
-            Our benchmark uncovers significant limitations in current VL-GenRMs: even top commercial models achieve only moderate performance (GPT-4: 62.4%, Gemini-1.5-Pro: 62.5%). Meanwhile, state-of-the-art open-source models like Qwen2-VL-72B and LLaMA-3.2-90B perform near chance level (43.0% and 53.9%, respectively). 
-          </p> -->
+          <p>
+            We conduct comprehensive evaluation of 28 multimodal reward models (MRMs), convering generative, discriminative and semi-scalar MRM. The generative MRMs can be categorized into four types: proprietary models, open-source models, fast-thinking MRMs, and slow-thinking MRMs. The proprietary and open-source models are non-critic-trained MRMs. The fast-thinking and slow-thinking MRMs are critic-trained MRMs. The discriminative and semi-scalar MRMs have also undergone specialized reward modeling training. 
+            
+            Leading proprietary models like Gemini-2.5-Pro and Claude-3.7-Sonnet achieve only moderate performance (Gemini-2.5-Pro: 63.6%, Claude-3.7-Sonnet: 63.2%), while GPT-4o performs at just 57.0%. The top-performing open-source LVLM Qwen2.5-VL-72B achieves only 53.3% overall accuracy.
+          </p>
   
         <div style="text-align: center;">
           <img id="pipeline_framework" width="80%" src="./images/result.png">     
@@ -358,6 +358,25 @@
         <div style="text-align: center;">
           <img id="pipeline_framework" width="90%" src="./images/BoN-correlation.png">     
         </div> -->
+        <div class="methodology-section">
+          <p class="mb-3">
+            <b>Result analysis:</b>
+          </p>
+          <div class="domains-list mb-4">
+            <div class="domain-item">
+              <span class="domain-number">1.</span>
+              <span>Most models struggle across the dimensions of short-form perception, knowledge, and reasoning.</span>
+            </div>
+            <div class="domain-item">
+              <span class="domain-number">2.</span>
+              <span>Scaling up model size generally improves performance across both open and proprietary models.</span>
+            </div>
+            <div class="domain-item">
+              <span class="domain-number">3.</span>
+              <span>MRMs trained with reinforcement learning (RL) do not necessarily exhibit stronger cross-modal generalization than those trained without RL.</span>
+            </div>
+          </div>
+        
       </div>
   </section>
   
@@ -373,14 +392,17 @@
         <div class="column">
           <div class="content has-text-justified">
             <p class="mb-5">
-              Given the poor accuracy of VL-GenRMs on our benchmark, our analysis uncovers three critical insights for advancing VL-GenRMs:
+              We also investigate the impact of inference-time scaling and the number of input video frames on different types of multimodal reward models (MRMs) for video understanding.
             </p>
-  
+
             <div class="finding-box mb-4">
               <p class="finding-content">
-                1. The primary performance bottleneck lies in visual perception rather than reasoning - models show significantly higher error rates on existence/recognition tasks (> 67%) compared to reasoning tasks (41.8%).
-                <span class="arrow">→</span>
-                <span class="conclusion">Improving Visual Perception Capability of VL-GenRMs first!</span>
+                <b>Our findings:</b><br>
+                1. Except for discriminative MRMs, inference-time scaling improves performance for both generative and semi-scalar MRMs.<br>
+                2. MRMs trained via RL, such as R1-Reward, benefit significantly more from inference-time scaling (14.3% gain from K=1 to 9) than the non-critic-trained base model Qwen2.5-VL-7B (5.5%) or fast-thinking MRMs like LLaVA-Critic-7B (6.7%).<br>
+                3. Within the same model family, larger models do not necessarily gain more than smaller ones.<br>
+                4. Critic-trained generative MRMs and non-critic-trained generative MRMs have a similar upper bound in inference-time scaling.
+                5. An appropriate temperature setting is critical to the success of inference-time scaling.
               </p>
             </div>
             <div class="text-center mb-4">
@@ -389,9 +411,14 @@
   
             <div class="finding-box mb-4">
               <p class="finding-content">
-              2. The effectiveness of test-time scaling varies with model capacity, providing benefits to larger models while potentially degrading smaller models' performance.
-                <span class="arrow">→</span>
-                <span class="conclusion">Advancing Test-time Scaling Strategies for VL-GenRMs.</span>
+                Increasing input frames affects different types of MRMs differently. Not all MRMs exhibit performance gains as more frames are provided.<br>
+                <b>For generative MRMs:</b><br>
+                1. Critic-trained generative MRMs show a clear upward trend.<br>
+                2. Non-critic-trained generative MRMs (Qwen2.5-VL-7B/72B) exhibit a relatively less pronounced upward trend<br>
+                <b>For the discriminative MRM:</b><br>
+                1. Skywork-VL Reward exhibits substantial performance fluctuations at low frame counts but stabilizes as frames increase. <br>
+                <b>For the semi-scalar MRM:</b><br>
+                1. MM-RLHF-Reward is the least affected by frame count variation, showing a slight initial drop before stabilizing.
               </p>
             </div>
   
