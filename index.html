@@ -360,7 +360,7 @@
         </div> -->
         <div class="methodology-section">
           <p class="mb-3">
-            <b>Result analysis:</b>
+            <b style="font-size:18px; color:#1a73e8;">Result analysis:</b>
           </p>
           <div class="domains-list mb-4">
             <div class="domain-item">
@@ -397,7 +397,7 @@
 
             <div class="finding-box mb-4">
               <p class="finding-content">
-                <b>Our findings in inference-time scaling:</b><br>
+                <b style="font-size:18px; color:#1a73e8;">Our findings in inference-time scaling:</b><br>
                 1. Except for discriminative MRMs, inference-time scaling improves performance for both generative and semi-scalar MRMs.<br>
                 2. MRMs trained via RL, such as R1-Reward, benefit significantly more from inference-time scaling (14.3% gain from K=1 to 9) than the non-critic-trained base model Qwen2.5-VL-7B (5.5%) or fast-thinking MRMs like LLaVA-Critic-7B (6.7%).<br>
                 3. Within the same model family, larger models do not necessarily gain more than smaller ones.<br>
@@ -411,15 +411,15 @@
   
             <div class="finding-box mb-4">
               <p class="finding-content">
-                <b>Our findings in frame count experiments:</b><br>
+                <b style="font-size:18px; color:#1a73e8;">Our findings in frame count experiments:</b><br>
                 Increasing input frames affects different types of MRMs differently. Not all MRMs exhibit performance gains as more frames are provided.<br>
                 <b>Generative MRMs:</b><br>
-                1. Critic-trained generative MRMs show a clear upward trend.<br>
-                2. Non-critic-trained generative MRMs (Qwen2.5-VL-7B/72B) exhibit a relatively less pronounced upward trend<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;1. Critic-trained generative MRMs show a clear upward trend.<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;2. Non-critic-trained generative MRMs (Qwen2.5-VL-7B/72B) exhibit a relatively less pronounced upward trend<br>
                 <b>Discriminative MRM:</b><br>
-                1. Skywork-VL Reward exhibits substantial performance fluctuations at low frame counts but stabilizes as frames increase. <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;1. Skywork-VL Reward exhibits substantial performance fluctuations at low frame counts but stabilizes as frames increase. <br>
                 <b>Semi-Scalar MRM:</b><br>
-                1. MM-RLHF-Reward is the least affected by frame count variation, showing a slight initial drop before stabilizing.
+                &nbsp;&nbsp;&nbsp;&nbsp;1. MM-RLHF-Reward is the least affected by frame count variation, showing a slight initial drop before stabilizing.
               </p>
             </div>
   
